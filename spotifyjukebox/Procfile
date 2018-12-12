@@ -1,1 +1,1 @@
-web: gunicorn spotifyjukebox.wsgi --log-file -
+web: gunicorn whatsplayingnow.wsgi --log-file -
