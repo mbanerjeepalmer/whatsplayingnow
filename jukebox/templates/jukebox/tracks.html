@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+	<table>
+		<!-- TODO is there a better way than using a dict, and if not sort out variable names... -->
+		<tr>
+		{% for thing in now_playing.now_playing_dict.values %}
+			<td> {{ thing }} </td>
+		{% endfor %}
+		</tr>
+			{% for track, little_track in recently_played.recently_played_dict.items %}
+		<tr>
+			{% for thing in little_track.values %}
+				<td>{{ thing }}</td>
+			{% endfor %}
+		</tr>
+		{% endfor %}
+	</table>
+	<br>
+    	<a href="auth">Click here if you've taken over the stereo now</a>
+    <br>
+</body>
+</html>

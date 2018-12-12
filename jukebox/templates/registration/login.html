@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+    </head>
+    <body>
+      {% if not user.is_authenticated %}
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type='submit'>Login</button>
+      </form>
+      {% endif %}
+      {% if user.is_authenticated %}
+        <a href="{{ authorization_url }}">Spotify login</a><br>
+      {% endif %}
+    </body>
+</html>
