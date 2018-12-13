@@ -18,6 +18,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 if 'HEROKU' in os.environ:
     client_secret, client_id = os.environ['SPOTIFY_CLIENT_SECRET'], os.environ['SPOTIFY_CLIENT_ID']
+    redirect_uri = 'https://whatsplayingnow.herokuapp.com/callback/'
 else:
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
     redirect_uri = 'http://127.0.0.1:8000/callback/'
