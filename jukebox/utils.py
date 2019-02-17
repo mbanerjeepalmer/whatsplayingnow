@@ -1,4 +1,5 @@
 import traceback
+from .models import UserProfile
 
 def now_playing_track(response_dict):
     """
@@ -39,3 +40,12 @@ def recently_played_tracks(response_dict):
     recently_played_dict = {'recently_played_dict': tracks_dict}
     return recently_played_dict
 
+def available_spotify_accounts(user):
+    """
+    Accepts a User object and returns all the spotu
+    """
+    acct_dict = {}
+    acct_queryset = UserProfile.objects.filter(user=user).exclude(spotify_id__isnull=True)
+    for acct in acct_queryset:
+        setattr(acct_dict, acct.spotify_id, acct.spotify_name)
+    return acct_queryset

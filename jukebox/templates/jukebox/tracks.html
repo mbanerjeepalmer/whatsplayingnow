@@ -22,5 +22,10 @@
 	<br>
     	<a href="auth">Click here if you've taken over the stereo now</a>
     <br>
+    <ul>
+    	{% for spotify_id, spotify_name in available_spotify_accounts.items %}
+    	<li>{{ spotify_id }} - {{ spotify_name }}</li>
+  		{% endfor %}
+    </ul>
 </body>
 </html>
