@@ -2,3 +2,7 @@
 spotifyenv
 ._*
 secrets.json
+
+__pycache__/
+*.py[cod]
+*$py.class
