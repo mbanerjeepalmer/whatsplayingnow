@@ -3,11 +3,11 @@ import json
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-from requests_oauthlib import OAuth2Session, TokenUpdated
+
 from .models import UserProfile
 import traceback
 from oauthlib.oauth2 import TokenExpiredError
-from .utils import recently_played_tracks, now_playing_track, available_spotify_accounts
+from .utils import * # TODO be less stupid
 
 # TODO move all of this
 scopes = 'user-read-currently-playing user-read-recently-played'
@@ -52,7 +52,7 @@ def callback(request):
             spotify_id = user_details.json()['id']
             token['user'] = user
             token['spotify_name'] = user_details.json()['display_name']
-            UserProfile.objects.update_or_create(defaults=token, spotify_id=spotify_id) 
+            UserProfile.objects.update_or_create(defaults=token, spotify_id=spotify_id)
             # TODO move this whole bit elsewhere and make more general purpose
             # The update_or_create also needs to know what to use, presumably? Otherwise it will always create rather than update now?
         return HttpResponse(user_details.json()['display_name'] + " what you play will now show on https://whatsplayingnow.herokuapp.com")
@@ -62,41 +62,24 @@ def callback(request):
 
 @login_required
 def tracks(request, spotify_id=None):
-    """See who's playing what"""
+    """
+    See who's playing what:
+    This checks who you're requesting for by grabbing from the URL
+    Asks Spotify for data on that person
+    Returns the data
+    """
     try:
-        # TODO this is all a crock of shit
-        # Split apart into different elements
-        # Allow choice between different users
+        # TODO less bad than before
+        # But still seems like odd copy paste
         tracks_details = {}
-        try:
-            spotify_user = UserProfile.objects.get(spotify_id=spotify_id)
-        except UserProfile.DoesNotExist:
-            spotify_user = UserProfile.objects.order_by('expires_at').last() # TODO This breaks if there are no user Profiles, obviously
-        token = spotify_user.__dict__ # TODO clearly this is ridiculous because I have to overwrite it later for an expired token
-        del token['_state'], token['id'], token['user_id']
-        client = OAuth2Session(client_id, token=token)
-        now_playing_request = client.get('https://api.spotify.com/v1/me/player/currently-playing') #TODO tidy up and remove copy/paste
-        if now_playing_request.status_code == 200:
-            now_playing_dict = now_playing_request.json()
-            now_playing_details = now_playing_track(now_playing_dict) # TODO this breaks if the user has never listened to anything on Spotify before
-            tracks_details['now_playing'] = now_playing_details
-        else:
-            tracks_details['now_playing'] = {'now_playing_dict': {'track':'Spotify says nothing is playing right now.'}}
-        recents_request = client.get('https://api.spotify.com/v1/me/player/recently-played')
-        recents_request.raise_for_status()
-        recents_dict = recents_request.json()
-        recently_played_details = recently_played_tracks(recents_dict) # This is completely wrong.
-        tracks_details['recently_played'] = recently_played_details
+        spotify_user = get_spotify_user(spotify_id)
+        client = authorise_spotify_user(client_id, spotify_user)
+        tracks_details['now_playing'] = get_now_playing(client)
+        tracks_details['recently_played'] = get_recently_played(client)
         tracks_details['available_spotify_accounts'] = available_spotify_accounts(request.user)
         return render (request, 'jukebox/tracks.html', context=tracks_details)
     except TokenExpiredError:
-        # TODO Option 3 https://requests-oauthlib.readthedocs.io/en/latest/oauth2_workflow.html#refreshing-tokens
-        extra = dict(client_id=client_id, client_secret=client_secret)
-        token = client.refresh_token(auth_url, **extra)
-        spotify_user = UserProfile.objects.order_by('expires_at').last()
-        for key, value in token.items():
-            setattr(spotify_user, key, value)
-        spotify_user.save()
+        refresh_spotify_user(client, client_id, client_secret, spotify_user, auth_url)
         return tracks(request)
     except Exception as general_error:
         error_message = "Damn. \n"+ str(general_error) + traceback.format_exc()
