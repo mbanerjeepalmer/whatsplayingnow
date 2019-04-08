@@ -13,6 +13,7 @@ def get_now_playing(client):
         now_playing = now_playing_details
     else:
         now_playing = {'now_playing_dict': {'track':'Spotify says nothing is playing right now.'}}
+    return now_playing
 
 def now_playing_track(response_dict):
     """
