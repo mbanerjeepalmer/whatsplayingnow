@@ -14,7 +14,7 @@ oauthlib==2.1.0
 pelican==4.0.1
 psycopg2==2.7.6.1
 pyandoc==0.2.0
-Pygments==2.3.1
+Pygments==2.7.4
 pymongo==3.7.2
 python-dateutil==2.7.5
 pytz==2018.7
